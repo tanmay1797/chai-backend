@@ -17,7 +17,9 @@ connectDB()
 
 /*
 import express from "express";
-const app = express()(async () => {
+const app = express()
+
+(async () => {
   try {
     await mongoose.connect(`${process.env.MONGO_URI}/${DB_NAME}`);
     app.on("error", (error) => {

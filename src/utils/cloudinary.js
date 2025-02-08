@@ -9,7 +9,6 @@ cloudinary.config({
 });
 
 const uploadOnCloudinary = async (localFilePath) => {
-  console.log("localFilePath12", localFilePath);
   try {
     if (!localFilePath) return null;
 
@@ -17,6 +16,8 @@ const uploadOnCloudinary = async (localFilePath) => {
     const response = await cloudinary.uploader.upload(localFilePath, {
       resource_type: "auto",
     });
+
+    // console.log("cloudinary response", response);
 
     // file has been uploaded successfully
 

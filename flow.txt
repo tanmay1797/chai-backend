@@ -1,0 +1,161 @@
+sabse pehle db create connect kara through a function connectDB. connectDB ko export karo
+
+index.js main dotenv ko import karo. sabse upar. baki sari files main available hojayegi dotenv
+
+import connectDB in index.js. when importing connectdb, use extension as well (.js)
+
+always import using extensions
+
+connectDB function call karo 
+
+try catch ka wrapper bnayage utils main asyncy handler ka. or promise.resolve wala. check on chatgpt how it works
+
+create models in user and video 
+
+install mongoose aggregate paginate for writing aggregation queries**true power of mongoose
+*for complex operations we use aggreagation queries*
+videoSchema.plugin(mongooseAggregatePaginate); --> ese
+
+more packages to add
+bcrypt -> hash password
+add jwt => token
+
+user.modle.js -> bcrypt se hash kro password. pre hook use karo.
+dont use arrow function in pre. no this keyword access.
+hume hmesha hash ni krvana password so if password is not modified dont do anything just return
+
+add methods for user login(inject in user schema)->isPasswordCorrect
+
+jwt use in user.mode.js -> jwt.sign()
+access token-> not stored in db
+refresh token -> stored in db
+
+upload file/photos on cloudinary using multer
+install cloudinary and multer
+processs - step 1 -we will take file from the user and will put it on our server temporary. 
+then in step 2 we will use cloudinary and put the file on cloudinary server from local server
+
+why 2 step? why not direct upload on cloudinary? it is indstry standard. as we can reattain it if needed. we can also do it in one step
+
+in utils me make a utility for cloudinary.
+import cloudinary and copy config it
+import fs(filesystem)
+we will use unlink from fs to unlink file/delete.
+give cloudname,api key, secret key etc etc in config
+
+we will create a method uploadOnCloudinary to do all the operations. else we can also do it directly without the function.
+
+cloudinary response {
+  asset_id: '404b2dbb0adfa1aec399110ada65886c',
+  public_id: 'xlswrqyknejncmuscj1t',
+  version: 1738585884,
+  version_id: '7ac11ea243d7d01bedc6b96edc5b710a',
+  signature: '9c10f712019e66329d34b429321f5a13b3e0d81c',
+  width: 2500,
+  height: 2500,
+  format: 'jpg',
+  resource_type: 'image',
+  created_at: '2025-02-03T12:31:24Z',
+  tags: [],
+  bytes: 606248,
+  type: 'upload',
+  etag: '0d835a5b13ddafdd81534a7729c62f9f',
+  placeholder: false,
+  url: 'http://res.cloudinary.com/dsnohexn5/image/upload/v1738585884/xlswrqyknejncmuscj1t.jpg',
+  secure_url: 'https://res.cloudinary.com/dsnohexn5/image/upload/v1738585884/xlswrqyknejncmuscj1t.jpg',
+  asset_folder: '',
+  display_name: 'xlswrqyknejncmuscj1t',
+  original_filename: 'umbrella',
+  api_key: '198497214729716'
+}
+try catch m use kro uploadOnCloudinary. async wait lagake
+catch block main b unlink kardo
+
+
+next-> multer ka use karke middleware banayege separate file m(multer.middleware.js)
+we use diskStorage in this. we give destination and filename in it. 
+
+next -> create user.controller.js 
+create basic a controller(registerUser) and return a simple json from it. will do it later in depth
+and export it
+
+in routes -> create route(user.routes.js)
+import Router from express
+declare a router from Router()
+create a route from it and include .post(registerUser)
+export the route
+
+import the route in app.js (.js lagado)
+now declare the route 
+we will not use app.get here as we have the router from express.
+we will use app.use here(/api/v1/users) and pass the route and the router(userRouter)
+
+
+now whatever route we give in app.js  in app.use() will be prefix
+and from userRouter /register is added
+complete path will be http://localhost:2000/api/v1/users/register
+
+flow->in app.js route is called.which in trun will call ths userRouter(in user.routes). userRouter will suffix register to the end of route and will call registerUser(user.controller.js)
+
+
+now we will write registerUser controller 
+registerUser {
+   //get user details from frontend
+  //validation - not empty
+  //check if user already exists: username, email
+  //check for images, check for avatar
+  //upload them to cloudinary, avatar
+  //create user object -create entry in db
+  //remove password and refresh token field from response
+  //check for user creation
+  //return response
+}
+
+to handle files we will import multer middleware in route
+registerUser se pehle middleware lagado
+
+to validate the incoming fields we can do like
+if(fullName === "){
+  throw new ApiError(400, "full name is required)
+}
+
+we check single by single but to make it easy we use a method
+ if (
+    [fullName, email, username, password].some((field) => field?.trim() === "")
+  ) {
+    throw new ApiError(400, "All fields are required");
+  }
+
+then we will check if user already exist or not using mongoose model
+
+now we will handle images
+we get all the data inside req.body 
+but we have added the upload middleware in routes we get access to req.files access
+for avatar path
+we will get path from req.files.avatar[0].path
+
+now for coverImageLocalPath we can do the same 
+
+now upload them on cloudinary
+
+now while uploading on cloudinary and pass the localpath to it
+it will upload on cloudinary and it will return response
+(uploading takes time so use await)
+
+check again for avatar is avialble or not
+
+now upload the data on database using User.create
+(will upload only avatar.url)
+
+we will check again if user is created or not
+now we will remove the password and refresh token form the user field
+
+
+app.js main express se app banao
+
+
+================================
+part 2
+
+refresh token = db m b rkhte hai aur user ko b dete hai
+validate toh access token se hi karte hai but refresh token A refresh token is used to obtain a new access token once the original access token expires.
